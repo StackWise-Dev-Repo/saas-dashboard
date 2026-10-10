@@ -17,6 +17,11 @@ import {
 } from 'lucide-react';
 import { useAuthContext } from './context/AuthContext';
 import UserLogin from './components/UserLogin';
+import Dashboard from './components/Dashboard';
+import PlansAndPricing from './components/PlansAndPricing';
+import Usage from './components/Usage';
+import Session from './components/Session';
+import SettingsComp from './components/SettingsComp';
 
 export default function AppLayout() {
 
@@ -54,11 +59,11 @@ export default function AppLayout() {
 
   // Navigation Items Config
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'plans', label: 'Plans & Pricing', icon: CreditCard },
-    { id: 'usage', label: 'API Usage', icon: BarChart3 },
-    { id: 'sessions', label: 'Active Sessions', icon: Activity },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, 'comp': <Dashboard /> },
+    { id: 'plans', label: 'Plans & Pricing', icon: CreditCard, 'comp': <PlansAndPricing /> },
+    { id: 'usage', label: 'API Usage', icon: BarChart3, 'comp': <Usage /> },
+    { id: 'sessions', label: 'Active Sessions', icon: Activity, 'comp': <Session /> },
+    { id: 'settings', label: 'Settings', icon: Settings, 'comp': <SettingsComp /> },
   ];
 
   if(Object.keys(session).length === 0) return <UserLogin />
@@ -71,6 +76,13 @@ export default function AppLayout() {
 
   const sessionLogoutHandler = (email) => {
     removeSession(email);
+  }
+
+  const menuClickHandler = (menu) => {
+    setActiveTab(menu);
+    const url = new URL(window.location.href);
+    const origin = url.origin 
+    window.history.pushState({}, '', menu === 'dashboard' ? origin: origin + `/app/${menu}` );
   }
 
 
@@ -100,7 +112,7 @@ export default function AppLayout() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => menuClickHandler(item.id)}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all relative ${isActive
                       ? 'text-white'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -201,7 +213,6 @@ export default function AppLayout() {
                     }
                   }
                 >
-                  {/* POPULATE NOTIFICATIONS HERE */}
                   {
                     notifications.length > 0 && notifications.map(notification => (
                       <div key={notification.id} className={`wrapper hover:scale-[0.99] transition-all cursor-pointer my-2 border rounded-lg py-2 px-4 ${notification.status === 'PENDING' && 'border-red-400'} ${notification.status === 'SUCCESS' && 'border-green-400'} ${notification.status === 'INFO' && 'border-blue-400'} ${notification.status === 'ALERT' && 'border-orange-400'}`}>
@@ -227,13 +238,19 @@ export default function AppLayout() {
 
         {/* Empty Canvas Placeholder */}
         <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-800/80 rounded-2xl my-6 bg-slate-900/20">
-          <div className="text-center p-6">
-            <div className="inline-flex p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 mb-3">
-              <LayoutDashboard className="w-6 h-6" />
-            </div>
-            <p className="text-sm text-slate-400 font-medium">Dashboard content placeholder</p>
-            <p className="text-xs text-slate-600 mt-1">Ready for custom components insertion</p>
-          </div>
+            {menuItems.map(item => {
+              const isActive = activeTab === item.id;
+
+              return (
+                <div key={item.id}>
+                  {
+                    isActive ? (
+                      item.comp
+                    ): ''
+                  }
+                </div>
+              )
+            })}
         </div>
 
         {/* Footer Status */}
